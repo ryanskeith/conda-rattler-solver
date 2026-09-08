@@ -429,15 +429,6 @@ class RattlerSolver(Solver):
         if installed_python and to_be_installed_python:
             python_version_might_change = not to_be_installed_python.match(installed_python)
 
-        named_package_holds_python = any(
-            name in in_state.installed for name in in_state.do_not_remove
-        )
-
-        # TODO: Make in_state.requested a dict[str, list[MatchSpec]]
-        # This makes tests/core/test_solve.py::test_globstr_matchspec_compatible
-        # and test_globstr_matchspec_non_compatible pass
-        requested_specs = defaultdict(list)
-        for spec in self._unmerged_specs_to_add:
         # TODO: Make in_state.requested a dict[str, list[MatchSpec]]
         # This makes tests/core/test_solve.py::test_globstr_matchspec_compatible
         # and test_globstr_matchspec_non_compatible pass
