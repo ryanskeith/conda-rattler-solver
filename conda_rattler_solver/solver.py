@@ -477,15 +477,6 @@ class RattlerSolver(Solver):
             # Block B: main logic for user requests and installed packages
             if requested:
                 specs.extend(requested)
-                if (
-                    name == "python"
-                    and installed
-                    and in_state.is_updating
-                    and named_package_holds_python
-                    and all(spec.is_name_only_spec for spec in requested)
-                ):
-                    pyver = ".".join(installed.version.split(".")[:2])
-                    constraints.append(f"python {pyver}.*")
             elif name in in_state.always_update:
                 if in_state.update_modifier.UPDATE_ALL and conflicting and not history:
                     # with --update-all, all packages will be requested, but sometimes
@@ -500,6 +491,16 @@ class RattlerSolver(Solver):
                 # If prune is enabled, conda will act as if there were no history
                 # or installed packages freezing. Akin to creating an environment from scratch.
                 continue
+            elif (
+                keep_python_dependencies
+                and installed
+                and name in in_state.do_not_remove
+                and not conflicting
+            ):
+                # Retain the installed package and its actual dependency requirements.
+                # A conflict releases this record on the next solve attempt.
+                specs.append(history or name)
+                pinned_packages.append(installed)
             elif history:
                 if conflicting and history.strictness == 3:
                     # relax name-version-build (strictness=3) history specs that cause
@@ -534,7 +535,9 @@ class RattlerSolver(Solver):
                 ]
                 # TODO: Study whether we want to keep all not conflicting installed packages around
                 # This may prevent environments from dropping transitive deps they no longer need.
-                keep: bool = not conflicting
+                keep: bool = not conflicting or (
+                    keep_python_dependencies and name in in_state.do_not_remove
+                )
 
                 # Name-only user pins act as freezing pins (instead of a constraint)
                 if pinned and pinned.is_name_only_spec:
