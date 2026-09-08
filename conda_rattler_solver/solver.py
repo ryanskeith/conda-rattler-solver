@@ -438,7 +438,20 @@ class RattlerSolver(Solver):
         # and test_globstr_matchspec_non_compatible pass
         requested_specs = defaultdict(list)
         for spec in self._unmerged_specs_to_add:
+        # TODO: Make in_state.requested a dict[str, list[MatchSpec]]
+        # This makes tests/core/test_solve.py::test_globstr_matchspec_compatible
+        # and test_globstr_matchspec_non_compatible pass
+        requested_specs = defaultdict(list)
+        for spec in self._unmerged_specs_to_add:
             requested_specs[spec.name].append(spec)
+
+        python_requested = requested_specs.get("python", ())
+        keep_python_dependencies = (
+            in_state.is_updating
+            and installed_python is not None
+            and bool(python_requested)
+            and all(spec.is_name_only_spec for spec in python_requested)
+        )
 
         for name in out_state.specs:
             if "*" in name:
