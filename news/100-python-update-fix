@@ -1,10 +1,10 @@
 ### Enhancements
 
-* Use the latest Python spec in prefix history to determine whether a name-only
-  `conda update python` can change minor versions, and allow `conda update --all`
-  to update Python within the installed minor.
-
 ### Bug fixes
+
+* Preserve the installed `conda` package and its Python requirements during
+  `conda update python`, while honoring explicit Python pins and allowing
+  `conda` to change when requested or needed to resolve a dependency conflict.
 
 ### Deprecations
 
